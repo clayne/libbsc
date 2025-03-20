@@ -7,7 +7,7 @@ CUDA_INCLUDE_PATH = $(CUDA_PATH)/include
 
 NVCC = $(CUDA_BIN_PATH)/nvcc
 NVCCFLAGS = -m64 -O3 -Xcompiler=-fopenmp -arch=all -Wno-deprecated-gpu-targets -I $(CUDA_INCLUDE_PATH)
-NVCCEXTRAFLAGS = -DNDEBUG -DLIBBSC_CUDA_SUPPORT -DLIBBSC_SORT_TRANSFORM_SUPPORT -DLIBBSC_ALLOW_UNALIGNED_ACCESS -DLIBBSC_OPENMP_SUPPORT -DLIBSAIS_OPENMP
+NVCCEXTRAFLAGS = -DNDEBUG -DLIBBSC_CUDA_SUPPORT -DLIBBSC_OPENMP_SUPPORT -DLIBSAIS_OPENMP
 
 CC = clang++
 AR = ar
@@ -31,12 +31,6 @@ CFLAGS += -fopenmp -DLIBBSC_OPENMP_SUPPORT -DLIBSAIS_OPENMP
 
 # Comment out CFLAGS line below to enable debug output
 CFLAGS += -DNDEBUG
-
-# Comment out CFLAGS line below to disable Sort Transform
-CFLAGS += -DLIBBSC_SORT_TRANSFORM_SUPPORT
-
-# Comment out CFLAGS line below to disable unaligned memory access
-CFLAGS += -DLIBBSC_ALLOW_UNALIGNED_ACCESS
 
 # Comment out CFLAGS line below to disable CUDA acceleration
 CFLAGS += -DLIBBSC_CUDA_SUPPORT

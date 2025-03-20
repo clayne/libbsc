@@ -35,8 +35,8 @@ See also the bsc and libbsc web site:
 
 #define LIBBSC_VERSION_MAJOR           3
 #define LIBBSC_VERSION_MINOR           3
-#define LIBBSC_VERSION_PATCH           5
-#define LIBBSC_VERSION_STRING          "3.3.5"
+#define LIBBSC_VERSION_PATCH           6
+#define LIBBSC_VERSION_STRING          "3.3.6"
 
 #define LIBBSC_NO_ERROR                0
 #define LIBBSC_BAD_PARAMETER          -1
@@ -53,7 +53,7 @@ See also the bsc and libbsc web site:
 #define LIBBSC_BLOCKSORTER_NONE        0
 #define LIBBSC_BLOCKSORTER_BWT         1
 
-#ifdef LIBBSC_SORT_TRANSFORM_SUPPORT
+#ifndef LIBBSC_NO_SORT_TRANSFORM
 
   #define LIBBSC_BLOCKSORTER_ST3       3
   #define LIBBSC_BLOCKSORTER_ST4       4

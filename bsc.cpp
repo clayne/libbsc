@@ -698,7 +698,7 @@ void ShowUsage(void)
     fprintf(stdout, "             minimum: -b1, maximum: -b2047\n");
     fprintf(stdout, "  -m<algo> Block sorting algorithm, default: -m0\n");
     fprintf(stdout, "             -m0 Burrows Wheeler Transform (default)\n");
-#ifdef LIBBSC_SORT_TRANSFORM_SUPPORT
+#ifndef LIBBSC_NO_SORT_TRANSFORM
     fprintf(stdout, "             -m3..8 Sort Transform of order n\n");
 #endif
     fprintf(stdout, "  -c<ctx>  Contexts for sorting, default: -cf\n");
@@ -769,7 +769,7 @@ void ProcessSwitch(char * s)
                 {
                     case 0   : paramBlockSorter = LIBBSC_BLOCKSORTER_BWT; break;
 
-#ifdef LIBBSC_SORT_TRANSFORM_SUPPORT
+#ifndef LIBBSC_NO_SORT_TRANSFORM
                     case 3   : paramBlockSorter = LIBBSC_BLOCKSORTER_ST3; break;
                     case 4   : paramBlockSorter = LIBBSC_BLOCKSORTER_ST4; break;
                     case 5   : paramBlockSorter = LIBBSC_BLOCKSORTER_ST5; break;
@@ -869,7 +869,7 @@ void ProcessCommandline(int argc, char * argv[])
 
 int main(int argc, char * argv[])
 {
-    fprintf(stdout, "This is bsc, Block Sorting Compressor. Version 3.3.5. 6 February 2025.\n");
+    fprintf(stdout, "This is bsc, Block Sorting Compressor. Version 3.3.6. 19 March 2025.\n");
     fprintf(stdout, "Copyright (c) 2009-2025 Ilya Grebnov <Ilya.Grebnov@gmail.com>.\n\n");
 
 #if defined(_OPENMP) && defined(__INTEL_COMPILER)

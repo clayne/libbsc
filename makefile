@@ -23,12 +23,6 @@ CFLAGS += -fopenmp -DLIBBSC_OPENMP_SUPPORT -DLIBSAIS_OPENMP
 # Comment out CFLAGS line below to enable debug output
 CFLAGS += -DNDEBUG
 
-# Comment out CFLAGS line below to disable Sort Transform
-CFLAGS += -DLIBBSC_SORT_TRANSFORM_SUPPORT
-
-# Comment out CFLAGS line below to disable unaligned memory access
-CFLAGS += -DLIBBSC_ALLOW_UNALIGNED_ACCESS
-
 # Where you want bsc installed when you do 'make install'
 PREFIX = /usr
 
