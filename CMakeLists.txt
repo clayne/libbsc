@@ -21,6 +21,7 @@ project(bsc VERSION 3.3.6 LANGUAGES C CXX)
 #-------------------------------------------------------------------------------
 # Options
 #-------------------------------------------------------------------------------
+option(BSC_ENABLE_NATIVE_COMPILATION "Enable platform-native optimizations" ON)
 option(BSC_ENABLE_OPENMP "Enable OpenMP support" ON)
 option(BSC_ENABLE_CUDA "Enable CUDA support (requires OpenMP)" ON)
 
@@ -45,11 +46,37 @@ endif()
 #-------------------------------------------------------------------------------
 # Detect -march=native support
 #-------------------------------------------------------------------------------
-include(CheckCCompilerFlag)
-include(CheckCXXCompilerFlag)
 
-check_c_compiler_flag(-march=native COMPILER_SUPPORTS_MARCH_NATIVE_C)
-check_cxx_compiler_flag(-march=native COMPILER_SUPPORTS_MARCH_NATIVE_CXX)
+if(BSC_ENABLE_NATIVE_COMPILATION)
+  include(CheckCCompilerFlag)
+  include(CheckCXXCompilerFlag)
+  include(CheckCSourceRuns)
+
+  check_c_compiler_flag(-march=native COMPILER_SUPPORTS_MARCH_NATIVE_C)
+  check_cxx_compiler_flag(-march=native COMPILER_SUPPORTS_MARCH_NATIVE_CXX)
+
+  if(MSVC)
+    check_c_source_runs(
+      "#include<intrin.h>\\nint main() { int r[4]; __cpuid(r, 7); return (r[1] & 32) && (_xgetbv(0) & 4) ? 0 : 1; }"
+      COMPILER_SUPPORTS_MSVC_ARCH_AVX2
+    )
+    check_c_source_runs(
+      "#include<intrin.h>\\nint main() { int r[4]; __cpuid(r, 1); return (r[2] & (1 << 20)) ? 0 : 1; }"
+      COMPILER_SUPPORTS_MSVC_ARCH_SSE42
+    )
+  else()
+    set(COMPILER_SUPPORTS_MSVC_ARCH_AVX2 OFF)
+    set(COMPILER_SUPPORTS_MSVC_ARCH_SSE42 OFF)
+  endif()
+
+  set(COMPILER_CUDA_ARCHITECTURES "native")
+else()
+  set(COMPILER_SUPPORTS_MARCH_NATIVE_C OFF)
+  set(COMPILER_SUPPORTS_MARCH_NATIVE_CXX OFF)
+  set(COMPILER_SUPPORTS_MSVC_ARCH_AVX2 OFF)
+  set(COMPILER_SUPPORTS_MSVC_ARCH_SSE42 OFF)
+  set(COMPILER_CUDA_ARCHITECTURES "all")
+endif()
 
 #-------------------------------------------------------------------------------
 # Detect OpenMP support
@@ -110,10 +137,18 @@ target_sources(libbsc PRIVATE
 #-------------------------------------------------------------------------------
 if(COMPILER_SUPPORTS_MARCH_NATIVE_C)
   target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:C>:-march=native>)
+elseif(COMPILER_SUPPORTS_MSVC_ARCH_AVX2)
+  target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:C>:/arch:AVX2>)
+elseif(COMPILER_SUPPORTS_MSVC_ARCH_SSE42)
+  target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:C>:/arch:SSE4.2>)
 endif()
 
 if(COMPILER_SUPPORTS_MARCH_NATIVE_CXX)
   target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-march=native>)
+elseif(COMPILER_SUPPORTS_MSVC_ARCH_AVX2)
+  target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/arch:AVX2>)
+elseif(COMPILER_SUPPORTS_MSVC_ARCH_SSE42)
+  target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/arch:SSE4.2>)
 endif()
 
 #-------------------------------------------------------------------------------
@@ -129,7 +164,7 @@ endif()
 # Enable CUDA support
 #-------------------------------------------------------------------------------
 if(BSC_ENABLE_CUDA)
-  set_target_properties(libbsc PROPERTIES CUDA_ARCHITECTURES native)
+  set_target_properties(libbsc PROPERTIES CUDA_ARCHITECTURES ${COMPILER_CUDA_ARCHITECTURES})
   target_sources(libbsc PRIVATE
     libbsc/st/st.cu
     libbsc/bwt/libcubwt/libcubwt.cu
