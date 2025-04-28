@@ -44,9 +44,8 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 #-------------------------------------------------------------------------------
-# Detect -march=native support
+# Detect architecture specific optimizations support
 #-------------------------------------------------------------------------------
-
 if(BSC_ENABLE_NATIVE_COMPILATION)
   include(CheckCCompilerFlag)
   include(CheckCXXCompilerFlag)
@@ -55,7 +54,7 @@ if(BSC_ENABLE_NATIVE_COMPILATION)
   check_c_compiler_flag(-march=native COMPILER_SUPPORTS_MARCH_NATIVE_C)
   check_cxx_compiler_flag(-march=native COMPILER_SUPPORTS_MARCH_NATIVE_CXX)
 
-  if(MSVC)
+  if(MSVC AND NOT (COMPILER_SUPPORTS_MARCH_NATIVE_C AND COMPILER_SUPPORTS_MARCH_NATIVE_CXX))
     check_c_source_runs(
       "#include<intrin.h>\\nint main() { int r[4]; __cpuid(r, 7); return (r[1] & 32) && (_xgetbv(0) & 4) ? 0 : 1; }"
       COMPILER_SUPPORTS_MSVC_ARCH_AVX2
@@ -98,12 +97,22 @@ if(BSC_ENABLE_CUDA)
   if(NOT BSC_ENABLE_OPENMP)
     message(WARNING "OpenMP is required for CUDA; disabling CUDA support.")
     set(BSC_ENABLE_CUDA OFF)
+  elseif(MSVC AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "MSVC"))
+    message(WARNING "${CMAKE_CXX_COMPILER_ID} is not supported by nvcc on Windows; disabling CUDA support.")
+    set(BSC_ENABLE_CUDA OFF)
   else()
     find_package(CUDAToolkit)
     if(CUDAToolkit_FOUND)
-      message(STATUS "CUDA Toolkit found; enabling CUDA support.")
-      set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-      enable_language(CUDA)
+      include(CheckLanguage)
+      check_language(CUDA)
+      if (CMAKE_CUDA_COMPILER)
+        message(STATUS "CUDA Toolkit and CUDA Compiler found; enabling CUDA support.")
+        set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
+        enable_language(CUDA)
+      else()
+        message(WARNING "CUDA Compiler not found; disabling CUDA support.")
+        set(BSC_ENABLE_CUDA OFF)
+      endif()
     else()
       message(WARNING "CUDA Toolkit not found; disabling CUDA support.")
       set(BSC_ENABLE_CUDA OFF)
