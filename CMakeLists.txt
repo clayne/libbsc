@@ -16,7 +16,7 @@ if(UNIX AND NOT CMAKE_GENERATOR MATCHES "Visual Studio")
   endif()
 endif()
 
-project(bsc VERSION 3.3.6 LANGUAGES C CXX)
+project(bsc VERSION 3.3.7 LANGUAGES C CXX)
 
 #-------------------------------------------------------------------------------
 # Options

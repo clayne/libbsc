@@ -50,7 +50,7 @@ static INLINE int bsc_lzp_num_blocks(int n)
     return 8;
 }
 
-#if !defined(LIBBSC_NO_UNALIGNED_ACCESS) && (defined(__x86_64__) || defined(__aarch64__))
+#if !defined(LIBBSC_NO_UNALIGNED_ACCESS) && (defined(LIBBSC_x86_64) || defined(LIBBSC_AArch64))
 
 template<class T> int bsc_lzp_encode_small(const unsigned char * RESTRICT input, const unsigned char * inputEnd, unsigned char * RESTRICT output, unsigned char * outputEnd, int * RESTRICT lookup, int mask)
 {
@@ -548,7 +548,7 @@ int bsc_lzp_encode_block(const unsigned char * input, const unsigned char * inpu
     int result = LIBBSC_NOT_ENOUGH_MEMORY;
     if (int * lookup = (int *)bsc_zero_malloc((int)(1 << hashSize) * sizeof(int)))
     {
-#if !defined(LIBBSC_NO_UNALIGNED_ACCESS) && (defined(__x86_64__) || defined(__aarch64__))
+#if !defined(LIBBSC_NO_UNALIGNED_ACCESS) && (defined(LIBBSC_x86_64) || defined(LIBBSC_AArch64))
         if (hashSize <= 17)
         {
             result = (minLen == 1 * (int)sizeof(unsigned int      ) && result == LIBBSC_NOT_ENOUGH_MEMORY) ? bsc_lzp_encode_small  <unsigned int      >(input, inputEnd, output, outputEnd, lookup, (int)(1 << hashSize) - 1) : result;
@@ -583,7 +583,7 @@ int bsc_lzp_decode_block(const unsigned char * RESTRICT input, const unsigned ch
 
         for (int i = 0; i < 4; ++i) { *output++ = *input++; }
 
-#if !defined(LIBBSC_NO_UNALIGNED_ACCESS) && (defined(__x86_64__) || defined(__aarch64__))
+#if !defined(LIBBSC_NO_UNALIGNED_ACCESS) && (defined(LIBBSC_x86_64) || defined(LIBBSC_AArch64))
         if (hashSize <= 17)
         {
             unsigned int prev4 = *(unsigned int *)(output - 4);
