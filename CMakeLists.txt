@@ -24,6 +24,7 @@ project(bsc VERSION 3.3.7 LANGUAGES C CXX)
 option(BSC_ENABLE_NATIVE_COMPILATION "Enable platform-native optimizations" ON)
 option(BSC_ENABLE_OPENMP "Enable OpenMP support" ON)
 option(BSC_ENABLE_CUDA "Enable CUDA support (requires OpenMP)" ON)
+option(BSC_BUILD_SHARED_LIB "Build libbsc as a shared library" OFF)
 
 #-------------------------------------------------------------------------------
 # Language standards
@@ -123,7 +124,15 @@ endif()
 #-------------------------------------------------------------------------------
 # libbsc library target
 #-------------------------------------------------------------------------------
-add_library(libbsc STATIC)
+if(BSC_BUILD_SHARED_LIB)
+    set(BSC_LIBRARY_TYPE SHARED)
+else()
+    set(BSC_LIBRARY_TYPE STATIC)
+endif()
+ 
+add_library(libbsc ${BSC_LIBRARY_TYPE})
+
+set_target_properties(libbsc PROPERTIES PREFIX "" IMPORT_PREFIX "")
 add_library(bsc::libbsc ALIAS libbsc)
 
 target_sources(libbsc PRIVATE
@@ -196,6 +205,18 @@ target_link_libraries(bsc PUBLIC bsc::libbsc)
 # Installation directives
 #-------------------------------------------------------------------------------
 include(GNUInstallDirs)
+
+install(FILES
+  libbsc/filters.h
+  libbsc/libbsc.h
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libbsc
+)
+
+install(TARGETS libbsc
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libbsc
+)
 
 install(TARGETS bsc
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
