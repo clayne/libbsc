@@ -150,6 +150,11 @@ target_sources(libbsc PRIVATE
   libbsc/st/st.cpp
 )
 
+if(BSC_BUILD_SHARED_LIB)
+  target_compile_definitions(libbsc PUBLIC LIBBSC_SHARED)
+  target_compile_definitions(libbsc PRIVATE LIBBSC_EXPORTS)
+endif()
+
 #-------------------------------------------------------------------------------
 # Enable architecture specific optimizations
 #-------------------------------------------------------------------------------

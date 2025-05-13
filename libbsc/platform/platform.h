@@ -175,6 +175,22 @@ See also the bsc and libbsc web site:
     #endif
 #endif
 
+#ifndef LIBBSC_API
+  #ifdef _WIN32
+    #ifdef LIBBSC_SHARED
+      #ifdef LIBBSC_EXPORTS
+        #define LIBBSC_API __declspec(dllexport)
+      #else
+        #define LIBBSC_API __declspec(dllimport)
+      #endif
+    #else
+      #define LIBBSC_API
+    #endif
+  #else
+    #define LIBBSC_API
+  #endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -194,26 +210,26 @@ extern "C" {
     * @param size        - bytes to allocate.
     * @return a pointer to allocated space or NULL if there is insufficient memory available.
     */
-    void * bsc_malloc(size_t size);
+    LIBBSC_API void * bsc_malloc(size_t size);
 
     /**
     * Allocates memory blocks and initializes all its bits to zero.
     * @param size        - bytes to allocate.
     * @return a pointer to allocated space or NULL if there is insufficient memory available.
     */
-    void * bsc_zero_malloc(size_t size);
+    LIBBSC_API void * bsc_zero_malloc(size_t size);
 
     /**
     * Deallocates or frees a memory block.
     * @param address     - previously allocated memory block to be freed.
     */
-    void bsc_free(void * address);
+    LIBBSC_API void bsc_free(void * address);
 
     /**
     * Detects supported CPU features (Streaming SIMD Extensions).
     * @return highest supported CPU feature.
     */
-    int bsc_get_cpu_features(void);
+    LIBBSC_API int bsc_get_cpu_features(void);
 
 #ifdef __cplusplus
 }
