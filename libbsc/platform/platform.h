@@ -44,7 +44,7 @@ See also the bsc and libbsc web site:
 #define LIBBSC_CPU_FEATURE_SSE42     6
 #define LIBBSC_CPU_FEATURE_AVX       7
 #define LIBBSC_CPU_FEATURE_AVX2      8
-#define LIBBSC_CPU_FEATURE_AVX512F   9
+#define LIBBSC_CPU_FEATURE_AVX512CD  9
 #define LIBBSC_CPU_FEATURE_AVX512BW  10
 
 #if (defined(_M_AMD64) || defined(_M_X64) || defined(__amd64) || defined(__x86_64__)) && !defined(LIBBSC_x86_64)
@@ -58,8 +58,8 @@ See also the bsc and libbsc web site:
 #ifndef LIBBSC_CPU_FEATURE
     #if defined(__AVX512VL__) && defined(__AVX512BW__) && defined(__AVX512DQ__)
         #define LIBBSC_CPU_FEATURE LIBBSC_CPU_FEATURE_AVX512BW
-    #elif defined(__AVX512F__) || defined(__AVX512__)
-        #define LIBBSC_CPU_FEATURE LIBBSC_CPU_FEATURE_AVX512F
+    #elif defined(__AVX512F__) && defined(__AVX512CD__)
+        #define LIBBSC_CPU_FEATURE LIBBSC_CPU_FEATURE_AVX512CD
     #elif defined(__AVX2__)
         #define LIBBSC_CPU_FEATURE LIBBSC_CPU_FEATURE_AVX2
     #elif defined(__AVX__)

@@ -57,7 +57,11 @@ if(BSC_ENABLE_NATIVE_COMPILATION)
 
   if(MSVC AND NOT (COMPILER_SUPPORTS_MARCH_NATIVE_C AND COMPILER_SUPPORTS_MARCH_NATIVE_CXX))
     check_c_source_runs(
-      "#include<intrin.h>\\nint main() { int r[4]; __cpuid(r, 7); return (r[1] & 32) && (_xgetbv(0) & 4) ? 0 : 1; }"
+      "#include<intrin.h>\\nint main() { int r[4]; __cpuid(r, 7); return (r[1] & (1 << 30)) && ((_xgetbv(0) & 0xe0) == 0xe0) ? 0 : 1; }"
+      COMPILER_SUPPORTS_MSVC_ARCH_AVX512
+    )
+    check_c_source_runs(
+      "#include<intrin.h>\\nint main() { int r[4]; __cpuid(r, 7); return (r[1] & (1 <<  5)) && ((_xgetbv(0) & 0x06) == 0x06) ? 0 : 1; }"
       COMPILER_SUPPORTS_MSVC_ARCH_AVX2
     )
     check_c_source_runs(
@@ -65,6 +69,7 @@ if(BSC_ENABLE_NATIVE_COMPILATION)
       COMPILER_SUPPORTS_MSVC_ARCH_SSE42
     )
   else()
+    set(COMPILER_SUPPORTS_MSVC_ARCH_AVX512 OFF)
     set(COMPILER_SUPPORTS_MSVC_ARCH_AVX2 OFF)
     set(COMPILER_SUPPORTS_MSVC_ARCH_SSE42 OFF)
   endif()
@@ -73,6 +78,7 @@ if(BSC_ENABLE_NATIVE_COMPILATION)
 else()
   set(COMPILER_SUPPORTS_MARCH_NATIVE_C OFF)
   set(COMPILER_SUPPORTS_MARCH_NATIVE_CXX OFF)
+  set(COMPILER_SUPPORTS_MSVC_ARCH_AVX512 OFF)
   set(COMPILER_SUPPORTS_MSVC_ARCH_AVX2 OFF)
   set(COMPILER_SUPPORTS_MSVC_ARCH_SSE42 OFF)
   set(COMPILER_CUDA_ARCHITECTURES "all")
@@ -160,6 +166,8 @@ endif()
 #-------------------------------------------------------------------------------
 if(COMPILER_SUPPORTS_MARCH_NATIVE_C)
   target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:C>:-march=native>)
+elseif(COMPILER_SUPPORTS_MSVC_ARCH_AVX512)
+  target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:C>:/arch:AVX512>)
 elseif(COMPILER_SUPPORTS_MSVC_ARCH_AVX2)
   target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:C>:/arch:AVX2>)
 elseif(COMPILER_SUPPORTS_MSVC_ARCH_SSE42)
@@ -168,6 +176,8 @@ endif()
 
 if(COMPILER_SUPPORTS_MARCH_NATIVE_CXX)
   target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-march=native>)
+elseif(COMPILER_SUPPORTS_MSVC_ARCH_AVX512)
+  target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/arch:AVX512>)
 elseif(COMPILER_SUPPORTS_MSVC_ARCH_AVX2)
   target_compile_options(libbsc PRIVATE $<$<COMPILE_LANGUAGE:CXX>:/arch:AVX2>)
 elseif(COMPILER_SUPPORTS_MSVC_ARCH_SSE42)
