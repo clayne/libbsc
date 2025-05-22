@@ -35,8 +35,8 @@ See also the bsc and libbsc web site:
 
 #define LIBBSC_VERSION_MAJOR           3
 #define LIBBSC_VERSION_MINOR           3
-#define LIBBSC_VERSION_PATCH           8
-#define LIBBSC_VERSION_STRING          "3.3.8"
+#define LIBBSC_VERSION_PATCH           9
+#define LIBBSC_VERSION_STRING          "3.3.9"
 
 #define LIBBSC_NO_ERROR                0
 #define LIBBSC_BAD_PARAMETER          -1

@@ -1,3 +1,7 @@
+Changes in 3.3.9 (May 21, 2025)
+- Optimized QLFC transform for AVX512 instruction-set.
+- Optimized Adler-32 checksum for AVX2 instruction-set.
+
 Changes in 3.3.8 (May 12, 2025)
 - Updated libsais to v2.10.1.
 
