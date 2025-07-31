@@ -71,8 +71,8 @@ int paramEnableCUDA               = 0;
 int paramEnableSegmentation       = 0;
 int paramEnableReordering         = 0;
 int paramEnableLZP                = 1;
-int paramLZPHashSize              = 15;
-int paramLZPMinLen                = 128;
+int paramLZPHashSize              = LIBBSC_DEFAULT_LZPHASHSIZE;
+int paramLZPMinLen                = LIBBSC_DEFAULT_LZPMINLEN;
 
 int paramFeatures()
 {
@@ -734,9 +734,9 @@ void ShowUsage(void)
     fprintf(stdout, "  -s       Enable segmentation (adaptive block size), default: disable\n");
     fprintf(stdout, "  -r       Enable structured data reordering, default: disable\n");
     fprintf(stdout, "  -l       Enable Lempel-Ziv preprocessing, default: enable\n");
-    fprintf(stdout, "  -H<size> LZP dictionary size in bits, default: -H15\n");
+    fprintf(stdout, "  -H<size> LZP dictionary size in bits, default: -H%d\n", LIBBSC_DEFAULT_LZPHASHSIZE);
     fprintf(stdout, "             minimum: -H10, maximum: -H28\n");
-    fprintf(stdout, "  -M<size> LZP minimum match length, default: -M128\n");
+    fprintf(stdout, "  -M<size> LZP minimum match length, default: -M%d\n", LIBBSC_DEFAULT_LZPMINLEN);
     fprintf(stdout, "             minimum: -M4, maximum: -M255\n\n");
 #endif
 
@@ -888,7 +888,7 @@ void ProcessCommandline(int argc, char * argv[])
 
 int main(int argc, char * argv[])
 {
-    fprintf(stdout, "This is bsc, Block Sorting Compressor. Version 3.3.9, 21 May 2025.\n");
+    fprintf(stdout, "This is bsc, Block Sorting Compressor. Version %s, 30 July 2025.\n", LIBBSC_VERSION_STRING);
     fprintf(stdout, "Copyright (c) 2009-2025 Ilya Grebnov <Ilya.Grebnov@gmail.com>.\n\n");
 
 #if defined(_OPENMP) && defined(__INTEL_COMPILER)
