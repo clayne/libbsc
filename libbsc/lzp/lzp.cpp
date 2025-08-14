@@ -875,7 +875,7 @@ int bsc_lzp_compress_parallel(const unsigned char * input, unsigned char * outpu
         int result    = LIBBSC_NO_ERROR;
         int chunkSize = n / nBlocks;
 
-        int numThreads = omp_get_max_threads();
+        int numThreads = omp_get_max_threads() / omp_get_num_threads();
         if (numThreads > nBlocks) numThreads = nBlocks;
 
         output[0] = nBlocks;
@@ -963,9 +963,12 @@ int bsc_lzp_decompress(const unsigned char * input, unsigned char * output, int 
 
 #ifdef LIBBSC_OPENMP
 
-    if (features & LIBBSC_FEATURE_MULTITHREADING)
+    int numThreads = omp_get_max_threads() / omp_get_num_threads();
+    if (numThreads > nBlocks) numThreads = nBlocks;
+
+    if ((numThreads > 1) && (features & LIBBSC_FEATURE_MULTITHREADING))
     {
-        #pragma omp parallel for schedule(dynamic, 1)
+        #pragma omp parallel for schedule(dynamic, 1) num_threads(numThreads)
         for (int blockId = 0; blockId < nBlocks; ++blockId)
         {
             int inputPtr  = 0; int inputSize;

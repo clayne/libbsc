@@ -413,8 +413,17 @@ void Compression(char * argv[])
     if (paramEnableParallelProcessing)
     {
         numThreads = omp_get_max_threads();
-        if (numThreads <= nBlocks) paramEnableMultiThreading = 0;
-        if (numThreads >= nBlocks) numThreads = nBlocks;
+        if (numThreads >= 2 * nBlocks)
+        { 
+#if defined(_OPENMP) && _OPENMP >= 201811
+            omp_set_max_active_levels(2);
+#elif defined(_OPENMP)
+            omp_set_nested(1);
+#endif
+        }
+
+        if (numThreads < 2 * nBlocks) paramEnableMultiThreading = 0;
+        if (numThreads > 1 * nBlocks) numThreads = nBlocks;
     }
 
     if (numThreads > 1)
@@ -671,8 +680,17 @@ void Decompression(char * argv[])
     if (paramEnableParallelProcessing)
     {
         numThreads = omp_get_max_threads();
-        if (numThreads <= nBlocks) paramEnableMultiThreading = 0;
-        if (numThreads >= nBlocks) numThreads = nBlocks;
+        if (numThreads >= 2 * nBlocks)
+        { 
+#if defined(_OPENMP) && _OPENMP >= 201811
+            omp_set_max_active_levels(2);
+#elif defined(_OPENMP)
+            omp_set_nested(1);
+#endif
+        }
+
+        if (numThreads < 2 * nBlocks) paramEnableMultiThreading = 0;
+        if (numThreads > 1 * nBlocks) numThreads = nBlocks;
     }
 
     if (numThreads > 1)
@@ -713,7 +731,7 @@ void ShowUsage(void)
 
 #if !defined(BSC_DECOMPRESSION_ONLY)
     fprintf(stdout, "Block sorting options:\n");
-    fprintf(stdout, "  -b<size> Block size in megabytes, default: -b25\n");
+    fprintf(stdout, "  -b<size> Block size in megabytes or bytes (for size 10000+), default: -b25\n");
     fprintf(stdout, "             minimum: -b1, maximum: -b2047\n");
     fprintf(stdout, "  -m<algo> Block sorting algorithm, default: -m0\n");
     fprintf(stdout, "             -m0 Burrows Wheeler Transform (default)\n");
@@ -750,7 +768,7 @@ void ShowUsage(void)
 #endif
 #ifdef LIBBSC_OPENMP
     fprintf(stdout, "  -t       Disable parallel blocks processing, default: enable\n");
-    fprintf(stdout, "  -T       Disable multi-core systems support, default: enable\n");
+    fprintf(stdout, "  -T       Disable multithreading (-T<num> sets num threads), default: enable\n");
 #endif
     fprintf(stdout, "\n");
 #endif
@@ -850,7 +868,14 @@ void ProcessSwitch(char * s)
 
 #ifdef LIBBSC_OPENMP
             case 't': paramEnableParallelProcessing = 0; break;
-            case 'T': paramEnableParallelProcessing = paramEnableMultiThreading = 0; break;
+            case 'T':
+            {
+                char * strNum = s; while ((*s >= '0') && (*s <= '9')) s++;
+                int numThreads = atoi(strNum);
+                if (numThreads > 1) omp_set_num_threads(numThreads);
+                if (numThreads < 2) paramEnableParallelProcessing = paramEnableMultiThreading = 0;
+                break;
+            }
 #endif
 
 #ifdef LIBBSC_CUDA_SUPPORT
@@ -888,14 +913,15 @@ void ProcessCommandline(int argc, char * argv[])
 
 int main(int argc, char * argv[])
 {
-    fprintf(stdout, "This is bsc, Block Sorting Compressor. Version %s, 30 July 2025.\n", LIBBSC_VERSION_STRING);
-    fprintf(stdout, "Copyright (c) 2009-2025 Ilya Grebnov <Ilya.Grebnov@gmail.com>.\n\n");
-
-#if defined(_OPENMP) && defined(__INTEL_COMPILER)
-
+#if defined(LIBBSC_OPENMP)
+    omp_set_dynamic(0);
+#if defined(__INTEL_COMPILER)
     kmp_set_warnings_off();
-
 #endif
+#endif
+
+    fprintf(stdout, "This is bsc, Block Sorting Compressor. Version %s, 13 August 2025.\n", LIBBSC_VERSION_STRING);
+    fprintf(stdout, "Copyright (c) 2009-2025 Ilya Grebnov <Ilya.Grebnov@gmail.com>.\n\n");
 
     ProcessCommandline(argc, argv);
 
