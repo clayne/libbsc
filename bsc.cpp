@@ -100,14 +100,63 @@ int paramFeatures()
     #define BSC_FILEOFFSET long
 #endif
 
-#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__) || defined(_MSC_VER)
-  #include <windows.h>
-  double BSC_CLOCK() { return 0.001 * GetTickCount(); }
-#elif defined (__unix) || defined (__linux__) || defined (__QNX__) || defined (_AIX)  || defined (__NetBSD__) || defined(macintosh) || defined (_MAC)
-  #include <sys/time.h>
-  double BSC_CLOCK() { timeval tv; gettimeofday(&tv, 0); return tv.tv_sec + tv.tv_usec * 0.000001; }
+#ifdef _WIN32
+    #include <windows.h>
+
+    static unsigned long long bsc_now_ns() 
+    {
+        static LARGE_INTEGER freq = { 0 };
+        if (freq.QuadPart == 0)
+        {
+            QueryPerformanceFrequency(&freq);
+        }
+
+        LARGE_INTEGER counter;
+        QueryPerformanceCounter(&counter);
+
+        unsigned long long ticks = (unsigned long long)counter.QuadPart;
+        unsigned long long frequency = (unsigned long long)freq.QuadPart;
+        unsigned long long whole_seconds = ticks / frequency;
+        unsigned long long remainder_ticks = ticks % frequency;
+        unsigned long long ns = whole_seconds * 1000000000ull;
+        unsigned long long fractional_ns = (remainder_ticks * 1000000000ull) / frequency;
+
+        return ns + fractional_ns;
+    }
 #else
-  double BSC_CLOCK() { return (double)clock() / CLOCKS_PER_SEC; }
+    #include <time.h>
+    #include <sys/time.h>
+
+    static unsigned long long bsc_now_ns()
+    {
+        struct timespec ts;
+        struct timeval  tv;
+
+#ifdef CLOCK_UPTIME_RAW
+        if (clock_gettime(CLOCK_UPTIME_RAW, &ts) == 0)
+        {
+            return (unsigned long long)ts.tv_sec * 1000000000ull + (unsigned long long)ts.tv_nsec;
+        }
+#endif
+
+#ifdef CLOCK_MONOTONIC_RAW
+        if (clock_gettime(CLOCK_MONOTONIC_RAW, &ts) == 0)
+        {
+            return (unsigned long long)ts.tv_sec * 1000000000ull + (unsigned long long)ts.tv_nsec;
+        }
+#endif
+
+#ifdef CLOCK_MONOTONIC
+        if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0)
+        {
+            return (unsigned long long)ts.tv_sec * 1000000000ull + (unsigned long long)ts.tv_nsec;
+        }
+#endif
+
+        gettimeofday(&tv, NULL);
+
+        return (unsigned long long)tv.tv_sec * 1000000000ull + (unsigned long long)tv.tv_usec * 1000ull;
+     }
 #endif
 
 int segmentedBlock[256];
@@ -404,7 +453,7 @@ void Compression(char * argv[])
 
     outFileSize += (int)(sizeof(nBlocks));
 
-    double startTime = BSC_CLOCK();
+    unsigned long long startTime = bsc_now_ns();
 
     int segmentationStart = 0, segmentationEnd = 0;
 
@@ -439,9 +488,9 @@ void Compression(char * argv[])
         compression_omp(argv[2], fInput, inFileSize, argv[4], fOutput, outFileSize, segmentationStart, segmentationEnd);
     }
 
-    startTime = BSC_CLOCK() - startTime;
+    startTime = bsc_now_ns() - startTime;
 
-    fprintf(stdout, "\r%.55s encoded %.0f => %.0f in %.3fs (%.2f MB/s)\n", argv[2], (double)inFileSize, (double)outFileSize, startTime, ((double)inFileSize) / 1000000.0 / startTime);
+    fprintf(stdout, "\r%.55s encoded %.0f => %.0f in %.3fs (%.2f MB/s)\n", argv[2], (double)inFileSize, (double)outFileSize, (double)startTime / 1e9, ((double)inFileSize) * 1000.0 / (double)startTime);
 
     fclose(fInput); fclose(fOutput);
 }
@@ -673,7 +722,7 @@ void Decompression(char * argv[])
         exit(1);
     }
 
-    double startTime = BSC_CLOCK();
+    unsigned long long startTime = bsc_now_ns();
 
 #ifdef LIBBSC_OPENMP
     int numThreads = 1;
@@ -712,9 +761,9 @@ void Decompression(char * argv[])
         exit(1);
     }
 
-    startTime = BSC_CLOCK() - startTime;
+    startTime = bsc_now_ns() - startTime;
 
-    fprintf(stdout, "\r%.55s decoded %.0f => %.0f in %.3fs (%.2f MB/s)\n", argv[2], (double)inFileSize, (double)outFileSize, startTime, ((double)outFileSize) / 1000000.0 / startTime);
+    fprintf(stdout, "\r%.55s decoded %.0f => %.0f in %.3fs (%.2f MB/s)\n", argv[2], (double)inFileSize, (double)outFileSize, (double)startTime / 1e9, ((double)outFileSize) * 1000.0 / (double)startTime);
 
     fclose(fInput); fclose(fOutput);
 }
