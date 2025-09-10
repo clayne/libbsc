@@ -969,7 +969,7 @@ int main(int argc, char * argv[])
 #endif
 #endif
 
-    fprintf(stdout, "This is bsc, Block Sorting Compressor. Version %s, 13 August 2025.\n", LIBBSC_VERSION_STRING);
+    fprintf(stdout, "This is bsc, Block Sorting Compressor. Version %s, 9 September 2025.\n", LIBBSC_VERSION_STRING);
     fprintf(stdout, "Copyright (c) 2009-2025 Ilya Grebnov <Ilya.Grebnov@gmail.com>.\n\n");
 
     ProcessCommandline(argc, argv);

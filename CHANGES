@@ -1,4 +1,9 @@
-Changes in 3.3.11(August 13, 2025)
+Changes in 3.3.12 (September 9, 2025)
+- Updated libsais to v2.10.4.
+- Cross-platform monotonic nanosecond clock.
+- Optimized scalability for modern multi-core systems.
+
+Changes in 3.3.11 (August 13, 2025)
 - Updated libsais to v2.10.3.
 - Updated libcubwt to v1.6.3.
 - Support for CUDA Toolkit 13.0.

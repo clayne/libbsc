@@ -198,7 +198,7 @@ int bsc_bwt_encode(unsigned char * T, int n, unsigned char * num_indexes, int * 
 
 #ifdef LIBBSC_OPENMP
             int numThreads = (features & LIBBSC_FEATURE_MULTITHREADING) > 0 ? omp_get_max_threads() / omp_get_num_threads() : 1;
-            index = libsais_bwt_aux_omp(T, T, A, n, 0, NULL, mod + 1, I, numThreads > 1 ? numThreads : 1);
+            index = libsais_bwt_aux_omp(T, T, A, n, 0, NULL, mod + 1, I, numThreads < 1 ? 1 : (numThreads > 8 ? 8 : numThreads));
 #else
             index = libsais_bwt_aux(T, T, A, n, 0, NULL, mod + 1, I);
 #endif
@@ -213,7 +213,7 @@ int bsc_bwt_encode(unsigned char * T, int n, unsigned char * num_indexes, int * 
         {
 #ifdef LIBBSC_OPENMP
             int numThreads = (features & LIBBSC_FEATURE_MULTITHREADING) > 0 ? omp_get_max_threads() / omp_get_num_threads() : 1;
-            index = libsais_bwt_omp(T, T, A, n, 0, NULL, numThreads > 1 ? numThreads : 1);
+            index = libsais_bwt_omp(T, T, A, n, 0, NULL, numThreads < 1 ? 1 : (numThreads > 8 ? 8 : numThreads));
 #else
             index = libsais_bwt(T, T, A, n, 0, NULL);
 #endif
